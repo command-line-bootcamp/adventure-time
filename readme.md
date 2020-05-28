@@ -6,6 +6,7 @@ a web UI for doing nodeschool adventures in the browser
 
 here are some projects based on this
 
+- https://cli-boot.camp/
 - https://github.com/maxogden/get-dat
 - https://github.com/cdaringe/try-npm-guide
 
