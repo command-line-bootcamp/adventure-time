@@ -6,6 +6,24 @@ var on = require('component-delegate').bind
 var elementClass = require('element-class')
 var iframe = require('iframe')
 
+var xhrLoop = function(opts, count, max, waitTime, cb) {
+  count += 1;
+  xhr(opts, function(err, res) {
+    if (err && count < max) {
+      console.log('xhr failed, retrying in ' + waitTime + 'ms')
+      setTimeout(function() {
+        xhrLoop(opts, count, max, waitTime, cb)
+      }, waitTime)
+    } else {
+      cb(err, res)
+    }
+  })
+}
+
+var pushyXhr = function(opts, xhrOpts, cb) {
+  xhrLoop(xhrOpts, 0, opts.max, opts.waitTime, cb)
+}
+
 module.exports = function(opts) {
   if (!opts || !opts.guide || !opts.id || !opts.server) throw new Error('Must specify guide, server and id options')
     
@@ -17,8 +35,8 @@ module.exports = function(opts) {
   var guideDiv = document.querySelector('.guide')
   var consoleDiv = document.querySelector('.console')
   var defaultConsole = 'terminal.html?server=' + opts.server + '&id=' + opts.id
-  var guideFrame = iframe({src: opts.guide, container: guideDiv})
-  var consoleFrame = iframe({src: opts.console || defaultConsole, container: consoleDiv})
+  var guideFrame = iframe({src: opts.guide, container: guideDiv, sandboxAttributes: ['allow-scripts', 'allow-same-origin']})
+  var consoleFrame = iframe({src: opts.console || defaultConsole, container: consoleDiv, sandboxAttributes: ['allow-scripts', 'allow-same-origin']})
 
   var actions = {
     "toggle-bottom": function() {
@@ -50,12 +68,14 @@ module.exports = function(opts) {
   tree.appendTo(treeDiv)
 
   var readdir = function(path, cb) {
-    xhr({
+    pushyXhr({ max: 5, waitTime: 1000 },
+    {
       method: 'GET',
       url: proto+opts.server+'/files/'+opts.id+path,
       json: true
     }, function(err, response) {
       if (err) return cb(err)
+      console.log('directory successfully read:', path)
       cb(null, response.body)
     })
   }
@@ -83,7 +103,8 @@ module.exports = function(opts) {
   var filename = null
   var save = throttle(1000, function(cb) {
     if (!filename) return cb()
-    xhr({
+    pushyXhr({ max: 5, waitTime: 1000 },
+    {
       method: 'PUT',
       url: proto+opts.server+'/files/'+opts.id+encodeURI(filename),
       body: cm.getValue()
@@ -101,7 +122,8 @@ module.exports = function(opts) {
 
   tree.on('directory', cd)
   tree.on('file', function(path) {
-    xhr({
+    pushyXhr({ max: 5, waitTime: 1000 },
+    {
       method: 'GET',
       url: proto+opts.server+'/files/'+opts.id+path
     }, function(err, response) {
