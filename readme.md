@@ -16,7 +16,7 @@ here are some projects based on this
 
 - install docker (docker for linux, boot2docker for mac/windows)
 - install and run https://github.com/mafintosh/docker-browser-server
-- install and run https://github.com/maxogden/adventure-time (the demo uses get-dat content but you can swap in your own)
+- install and run https://github.com/command-line-bootcamp/adventure-time (the demo uses get-dat content but you can swap in your own)
 
 ### example
 
