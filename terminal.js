@@ -10,8 +10,7 @@ module.exports = function (parentDiv) {
   rainbow.show()
 
   var qs = url.parse(window.location.href, true).query
-  var proto = 'ws://'
-  if (qs.secure) proto = 'wss://'
+  var proto = 'wss://'
   var socket = websocket(proto + qs.server + '/' + (qs.id || ''))
 
   termjs.Terminal.colors[256] = '#ffffff'
